@@ -1,0 +1,57 @@
+function render() {
+
+	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+
+	var matStack = [];
+	//Set initial view
+	var eye = vec3(3.0, 3.0, 10.0);
+	var at = vec3(0.0, 0.0, 0.0);
+	var up = vec3(0.0, 1.0, 0.0);
+
+	mv = lookAt(eye, at, up);
+	// mv = translate(0, 0, -5);
+
+	gl.uniformMatrix4fv(mvLoc, gl.FALSE, flatten(transpose(mv)));
+	gl.drawArrays(shapes.axes.type, shapes.axes.start, shapes.axes.size);
+
+	matStack.push(mv);
+
+	// building1
+	mv = mult(mv, translate(1.5, 1.5, 0.0));
+	mv = mult(mv, scale(1.0, 3.0, 1.0));
+
+	// matStack.push(mv);
+
+	gl.uniformMatrix4fv(mvLoc, gl.FALSE, flatten(transpose(mv)));
+	gl.drawArrays(shapes.solidCube.type, shapes.solidCube.start, shapes.solidCube.size);
+
+	mv = matStack.pop();
+	matStack.push(mv);
+
+	mv = mult(mv, translate(-1.0, 0.75, 0.0));
+	mv = mult(mv, scale(1.0, 1.5, 1.0));
+
+	gl.uniformMatrix4fv(mvLoc, gl.FALSE, flatten(transpose(mv)));
+	gl.drawArrays(shapes.solidCube.type, shapes.solidCube.start, shapes.solidCube.size);
+
+	mv = matStack.pop();
+	matStack.push(mv);
+
+	mv = mult(mv, translate(0.0, 0.5, 1.5));
+	mv = mult(mv, scale(2.0, 1.0, 1.0));
+
+	gl.uniformMatrix4fv(mvLoc, gl.FALSE, flatten(transpose(mv)));
+	gl.drawArrays(shapes.solidCube.type, shapes.solidCube.start, shapes.solidCube.size);
+	mv = matStack.pop();
+	matStack.push(mv);
+
+	mv = mult(mv, translate(0.0, 0.5, -1.5));
+	mv = mult(mv, scale(2.0, 1.0, 1.0));
+
+	gl.uniformMatrix4fv(mvLoc, gl.FALSE, flatten(transpose(mv)));
+	gl.drawArrays(shapes.solidCube.type, shapes.solidCube.start, shapes.solidCube.size);
+	mv = matStack.pop();
+	matStack.push(mv);
+
+	requestAnimationFrame(render);
+}
