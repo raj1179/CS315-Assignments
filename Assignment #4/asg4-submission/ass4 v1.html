@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+
+        attribute vec4 vPosition;
+        attribute vec3 vNormal;	// Modified: previously vec4 vColor.
+
+        varying vec4 fColor;
+
+        // New: Illumination and shading parameters
+        uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+        uniform vec4 lightPosition;
+        uniform float shininess;
+
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projectionMatrix;
+
+        void
+        main()
+        {
+            // *******************************************
+            // NEW: Phong shading model
+            // *******************************************
+            vec3 pos = (modelViewMatrix * vPosition).xyz;
+            // Note: In many demo programs in Chapter 6, this line is as
+            //    vec3 pos = -(modelViewMatrix * vPosition).xyz;
+            // I believe that the minus sign is an error by the author.
+            // You can try this program with and without the minus sign,
+            // and determine which is right.
+
+            vec3 light = lightPosition.xyz;
+            vec3 L = normalize( light - pos );
+
+
+            vec3 E = normalize( -pos );
+            vec3 H = normalize( L + E );
+
+            vec4 NN = vec4(vNormal,0);
+
+            // Transform vertex normal into eye coordinates
+
+            vec3 N = normalize( (modelViewMatrix*NN).xyz);
+
+            // Compute terms in the illumination equation
+            vec4 ambient = ambientProduct;
+
+            float Kd = max( dot(L, N), 0.0 );
+            vec4  diffuse = Kd*diffuseProduct;
+
+            float Ks = pow( max(dot(N, H), 0.0), shininess );
+            vec4  specular = Ks * specularProduct;
+
+            if( dot(L, N) < 0.0 ) {
+        	specular = vec4(0.0, 0.0, 0.0, 1.0);
+            }
+            // ****** End of Phong shading model ******
+
+            gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+
+            // Now the color is the calculated shading value
+            // You can try to display ambient, diffuse, or specular
+            // component ONLY to better understand their individual
+            // effect.
+            fColor = ambient + diffuse + specular;
+            //fColor = ambient;
+            //fColor = diffuse;
+            //fColor = specular;
+
+            fColor.a = 1.0;		// Think about why you do this?
+        }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+
+        precision mediump float;
+
+        varying vec4 fColor;
+
+        void
+        main()
+        {
+
+            gl_FragColor = fColor;
+
+        }
+    </script>
+
+    <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="../Common/initShaders.js"></script>
+
+    <script type="text/javascript" src="../Common/MV.js"></script>
+    <script type="text/javascript" src="ass4 v1.js"></script>
+
+    <body>
+        <canvas id="gl-canvas" width="512" height="512">
+            Oops ... your browser doesn't support the HTML5 canvas element
+        </canvas>
+    </body>
+</html>
